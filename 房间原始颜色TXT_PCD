@@ -15,7 +15,7 @@ for i in range(0,len(OUTPUT_PATH_LIST)):
     data_path = os.path.join(OUTPUT_PATH_LIST[i][:-9] + 'pred.txt')
     Full_Data = np.loadtxt(data_path)
     
-    path = os.path.join(ROOT_DIR,'log1/test_results_50', os.path.basename(data_path)[:-4] + '.pcd')
+    path = os.path.join(ROOT_DIR,'log1/test_results_50', os.path.basename(data_path)[:-8] + 'real.pcd')
     if os.path.exists(path):
         os.remove(path)
     Output_Data = open(path, 'a')
