@@ -1,0 +1,40 @@
+import os
+import sys
+import numpy as np
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
+sys.path.append(BASE_DIR)
+sys.path.append(ROOT_DIR)
+ROOT_DIR = os.path.join(ROOT_DIR, 'models/ASIS')
+
+OUTPUT_PATH_LIST = [os.path.join(ROOT_DIR,line.rstrip()) for line in open(os.path.join(ROOT_DIR, 'log1/output_groupfilelist_50.txt'))]
+for i in range(0,len(OUTPUT_PATH_LIST)):
+    print('Processing: %d/%d'%(i,len(OUTPUT_PATH_LIST)))
+    Full_Data = []
+    Full_Data = np.loadtxt(OUTPUT_PATH_LIST[i])
+    
+    path = os.path.join(ROOT_DIR,'log1/test_results_50', os.path.basename(OUTPUT_PATH_LIST[i])[:-4] + '.pcd')
+    if os.path.exists(path):
+        os.remove(path)
+    Output_Data = open(path, 'a')
+    # headers
+    Output_Data.write('# .PCD v0.7 - Point Cloud Data file format\nVERSION 0.7\nFIELDS x y z rgba\nSIZE 4 4 4 4\nTYPE F F F U\nCOUNT 1 1 1 1')
+    string = '\nWIDTH ' + str(Full_Data.shape[0])
+    Output_Data.write(string)
+    Output_Data.write('\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0')
+    string = '\nPOINTS ' + str(Full_Data.shape[0])
+    Output_Data.write(string)
+    Output_Data.write('\nDATA ascii')
+    
+    # pack RGB
+    RGB = []
+    for j in range(Full_Data.shape[0]):
+        R=int(Full_Data[j,3]*255)
+        G=int(Full_Data[j,4]*255)
+        B=int(Full_Data[j,5]*255)
+        value = (int(R) << 16 | int(G) << 8 | int(B))
+        string = ('\n' + str(Full_Data[j,0]) + ' ' + str(Full_Data[j, 1]) + ' ' +str(Full_Data[j, 2]) + ' ' + str(value))
+        Output_Data.write(string)
+    
+    Output_Data.close()
