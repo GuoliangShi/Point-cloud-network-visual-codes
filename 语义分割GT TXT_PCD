@@ -1,0 +1,57 @@
+import os
+import sys
+import numpy as np
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
+sys.path.append(BASE_DIR)
+sys.path.append(ROOT_DIR)
+ROOT_DIR = os.path.join(ROOT_DIR, 'models/ASIS')
+
+g_class2color = (0,255,0,
+                 0,0,255,
+                 0,255,255,
+                 255,255,0,
+                 255,0,255,
+                 100,100,255,
+                 200,200,100,
+                 170,120,200,
+                 255,0,0,
+                 200,100,100,
+                 10,200,100,
+                 200,200,200,
+                 50,50,50)
+
+OUTPUT_PATH_LIST = [os.path.join(ROOT_DIR,line.rstrip()) for line in open(os.path.join(ROOT_DIR, 'log1/output_groupfilelist_50.txt'))]
+for i in range(0,len(OUTPUT_PATH_LIST)):
+    print('Processing: %d/%d'%(i,len(OUTPUT_PATH_LIST)))
+    Full_Data = []
+    data_path = os.path.join(OUTPUT_PATH_LIST[i][:-9] + 'pred.txt')
+    gt_path = os.path.join(OUTPUT_PATH_LIST[i][:-9] + 'gt.txt')
+    Full_Data = np.loadtxt(data_path)
+    GT_Data = np.loadtxt(gt_path)
+    
+    path = os.path.join(ROOT_DIR,'log1/test_results_50', os.path.basename(data_path)[:-4] + '_gt.pcd')
+    if os.path.exists(path):
+        os.remove(path)
+    Output_Data = open(path, 'a')
+    # headers
+    Output_Data.write('# .PCD v0.7 - Point Cloud Data file format\nVERSION 0.7\nFIELDS x y z rgba\nSIZE 4 4 4 4\nTYPE F F F U\nCOUNT 1 1 1 1')
+    string = '\nWIDTH ' + str(Full_Data.shape[0])
+    Output_Data.write(string)
+    Output_Data.write('\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0')
+    string = '\nPOINTS ' + str(Full_Data.shape[0])
+    Output_Data.write(string)
+    Output_Data.write('\nDATA ascii')
+    
+    # pack RGB
+    RGB = []
+    for j in range(Full_Data.shape[0]):
+        R=g_class2color[int(GT_Data[j,0]*3+0)]
+        G=g_class2color[int(GT_Data[j,0]*3+1)]
+        B=g_class2color[int(GT_Data[j,0]*3+2)]
+        value = (int(R) << 16 | int(G) << 8 | int(B))
+        string = ('\n' + str(Full_Data[j,0]) + ' ' + str(Full_Data[j, 1]) + ' ' +str(Full_Data[j, 2]) + ' ' + str(value))
+        Output_Data.write(string)
+    
+    Output_Data.close()
